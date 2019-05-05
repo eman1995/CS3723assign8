@@ -27,7 +27,10 @@ def main():
     printVariables()
     printLabels()
     transferData()
-    execute()
+    if "-v" in sys.argv:
+        execute(v = True)
+    else:
+        execute()
 
 if __name__ == "__main__":
     main()

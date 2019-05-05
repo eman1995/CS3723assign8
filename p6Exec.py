@@ -17,7 +17,7 @@ def transferData():
 
 def flabels():
     for i in range(len(textlines)):
-        if textlines[i] == "\n":
+        if textlines[i].lstrip() == "\n" or len(textlines[i].lstrip()) == 0:
             continue
         line = textlines[i]
         line = line.lstrip()
@@ -28,7 +28,7 @@ def flabels():
             textlines[i] = line
     return 
 
-def execute():
+def execute(v = False):
     print("execution begins...")
     i=0
     infloop = 0
@@ -40,8 +40,8 @@ def execute():
         if i > len(textlines)-1:
             break;
         if infloop > 5000:
-            print("YALL DON FUCKED UP")
-            break
+            print("*** Error Infinite Loop Detected ***")
+            exit(-1)
         line = textlines[i]
         #print(line)
         
@@ -50,25 +50,39 @@ def execute():
             infloop += 1
             continue
         elif line[0] == "PRINT":
+            if v:
+                print("executing line %d: " % i, line)
             i += 1
             infloop += 1
             printfunc(line[1:], i)
             continue
         elif line[0] == "ASSIGN":
+            if v:
+                print("executing line %d: " % i, line)
             i += 1
             infloop += 1
             assfunc(line[1:], i)
             continue
         elif line[0].upper() == "IF":
+            if v:
+                print("executing line %d: " % i, line)
             if (iffunc(line[1:], i)):
-                i = labelD[line[-1]]-1
+                try:
+                    i = labelD[line[-1]]-1
+                except Exception as e:   
+                    print("*** line %d error detected ***" % (i)) 
+                    print("*** Label not defined: %s ***" % (line[-1]))
+                    exit(-1)
+            
                 #print(textlines[i])
             else:
                 i += 1
                 infloop += 1
         elif line[0] == "GOTO":
-           i = gotofunc(line[1:], i)
-           infloop +=1
+            if v:
+                print("executing line %d: " % i, line)
+            i = gotofunc(line[1:], i)
+            infloop +=1
         else:
             i+=1
             infloop += 1
@@ -86,57 +100,65 @@ def printfunc(line, count):
             except Exception as ex:
                  print("*** line %d error detected ***" % (count)) 
                  print("*** Var not defined: %s ***" % (e))
-                 exit(0)
+                 exit(-1)
         #string += e
     print(string)
         
 def assfunc(line, count):
     ''''''
     if len(line[1:]) == 1:
-        varValueD[line[0]] = varValueD[line[1]]
-        return
+        try:
+            varValueD[line[0]] = varValueD[line[1]]
+            return
+        except Exception as e:
+            print("*** line %d error detected ***" % (count)) 
+            print("*** Var not defined: %s ***" % (e))
+            exit(-1)
+        
     else:
-        op = line[1]
-        var1 = line[2]
-        var2 = line[3]
+        try:
+            op = line[1]
+            var1 = line[2]
+            var2 = line[3]
+        except Exception as e:
+            print("*** line %d error detected ***" % (count)) 
+            print("*** Too few operands ***")
+            exit(-1)
         if not var1.isdigit():
             var1 = str(varValueD[var1])
         if not var2.isdigit():
             var2 = str(varValueD[var2])
-        varValueD[line[0]] = eval(var1+op+var2) #error handle
-
+        try:
+            varValueD[line[0]] = eval(var1+op+var2) #error handle
+        except Exception as e:    
+            print("*** line %d error detected ***" % (count)) 
+            print("*** %s ***" % (e))
+            exit(-1)
 def iffunc(line, count):
     ''''''
-    var1 = line[1]   
-    var2 = line[2]
+    try:
+        var1 = line[1]   
+        var2 = line[2]
+    except Exception as e:
+        print("*** line %d error detected ***" % (count)) 
+        print("*** Too few operands ***")
+        exit(-1)
     if not var1.isdigit():
         var1 = str(varValueD[var1])
     if not var2.isdigit():
         var2 = str(varValueD[var2])
-    return(eval(var1+line[0]+var2)) #error handle
-
+    try:
+        return(eval(var1+line[0]+var2)) #error handle
+    except Exception as e:
+        print("*** line %d error detected ***" % (count)) 
+        print("*** %s ***" % (e))
+        exit(-1)
 def gotofunc(line, count):
     ''''''
     line = line[0]
-    return labelD[line]-1
-'''
-class TooFewOperands(Exception):
-    def __init__(self, args, kwargs):
-        super().__init__(self, args, kwargs)
-
-class VarNotDefined(Exception):
-    def __init__(self, args, kwargs):
-        super().__init__(self, args, kwargs)
-
-class LabelNotDefined(Exception):
-    def __init__(self, args, kwargs):
-        super().__init__(self, args, kwargs)
-
-class InvalidExpression(Exception):
-    def __init__(self, args, kwargs):
-        super().__init__(self, args, kwargs)
-
-class InvalidvalueType(Exception):
-    def __init__(self, args, kwargs):
-        super().__init__(self, args, kwargs)
-'''
+    try:
+        return labelD[line]-1
+    except Exception as ex:
+        print("*** line %d error detected ***" % (count)) 
+        print("*** Loop not defined: %s ***" % (line))
+        exit(-1)

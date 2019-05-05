@@ -49,7 +49,7 @@ def declareVar(t, vt, vV):
 
 def argCheck():
     '''check args''' 
-    if len(sys.argv) != 2:         
+    if not (len(sys.argv) ==2 or len(sys.argv) == 3):         
         print("Error incorrect arguments!\nPlease use only one file")        
         exit(1)
     return
